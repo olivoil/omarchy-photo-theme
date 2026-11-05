@@ -1,78 +1,64 @@
 # Photo Theme
 
-Your personal photos as Omarchy wallpapers, with optional matching colors.
+Turn photos you love into wallpapers, with desktop colors to match.
 
-![Photo Theme's native Omarchy photo carousel, showing landscape wallpapers](preview.png)
+![Photo Theme's photo picker showing a collection of landscape wallpapers](preview.png)
 
-An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional bar button, and one background service. It supports a local folder or read-only Google Drive syncing. Photos can come from Apple Photos, Google Photos, Immich, or anywhere else: export them into your chosen source folder.
+Choose a folder on your computer or in Google Drive. Pick a photo whenever you like, or let Photo Theme rotate through the collection. It uses Omarchy's familiar background picker and appears alongside your other themes.
 
-## Features
+You can use photos from any library. Export your favorites from Apple Photos, Google Photos, or Immich into your chosen folder, then let Photo Theme take it from there.
 
-- A **Photo Theme** entry in Omarchy's theme picker, with a preview.
-- **Appearance → Photo Theme**: choose a photo, next photo, pause/resume, sync, status, and settings.
-- Omarchy's standard background picker. Confirming a selection applies the image and then its colors.
-- Rotation every 15, 30, 60, 120, or 240 minutes, only while Photo Theme is selected.
-- Persistent pause, including after selecting another photo or restarting the shell.
-- Matching dark colors, matching light colors, or wallpaper only.
-- **Color Mode → Auto · Match Photo / Dark / Light / Wallpaper Only** in the main plugin menu. Auto uses Matugen's smart mode to choose dark or light from each photo's overall perceptual brightness. It is a visual heuristic, not a prediction of personal aesthetic preference. It only re-evaluates when the photo or color settings change.
-- Right-click the bar icon to toggle dark/light for the same photo. From Auto, this sets a manual override based on the displayed mode; choose Auto again to follow future photos.
-- Local folders and optional Google Drive downloads, checked every 15 minutes.
-- HEIC/HEIF conversion. Supported images up to 100 MiB; up to 10,000 photos per local source.
-- Disabling the plugin stops scheduling and workers. No systemd units or permanent theme hooks are needed.
+## Get started
 
-## Install
-
-Dependencies: Omarchy 4.x, Python 3.11+, ImageMagick, Matugen 4.2+ (for adaptive colors including Auto), rclone (for Google Drive), and Zenity (for choosing a folder).
+Photo Theme works with Omarchy 4 and Python 3.11 or newer.
 
 ```bash
 omarchy plugin add https://github.com/olivoil/omarchy-photo-theme --enable
 ```
 
-Update with `omarchy plugin update io.github.olivoil.photo-theme`. A local checkout can also be installed with `omarchy plugin add /absolute/path/to/checkout --enable --yes`.
+Open **Appearance → Photo Theme → Settings** in the Omarchy menu. Choose **Install Dependencies** if any tools are missing, then set up your photos:
 
-Open **Appearance → Photo Theme → Settings**. Use **Install Dependencies** if needed, then choose **Use Local Folder** or **Connect Google Drive Folder**. The latter asks for a folder link and opens Google authorization if a connection is not already available. Google Drive access is read-only. rclone's shared OAuth client may require replacement with your own client ID; see [rclone's Drive documentation](https://rclone.org/drive/#making-your-own-client-id).
+- **Use Local Folder** to choose a folder on your computer.
+- **Connect Google Drive Folder** to paste a folder link and connect your Google account. Photo Theme only reads from Drive.
 
-Select **Photo Theme** from the theme picker, or choose a photo from its menu. On a new installation, the neutral theme preview is replaced after photos have been imported. Network syncing is enabled only after choosing Drive; a local source never contacts a photo service.
+Once your photos are ready, select **Choose Photo**. Picking one applies the wallpaper and switches to Photo Theme. You can also select **Photo Theme** from Omarchy's theme picker.
 
-## Commands
+iPhone and iPad photos in HEIC format are converted automatically. Your original photos stay untouched.
 
-The executable is `bin/photo-theme` inside the installed plugin directory, normally `~/.config/omarchy/plugins/io.github.olivoil.photo-theme/bin/photo-theme`.
+## Make it yours
 
-```bash
-photo-theme pick
-photo-theme next
-photo-theme set "/path/to/a/photo/in/the/managed/collection.jpg"
-photo-theme pause
-photo-theme resume
-photo-theme status
-photo-theme request-sync
-photo-theme configure interval 60
-photo-theme configure appearance dark   # light, smart, or fixed also supported
-photo-theme configure appearance smart  # choose dark/light from each photo
-photo-theme toggle-mode                 # dark ↔ light, same photo
-```
+Open **Appearance → Photo Theme**, or click its bar icon, to choose another photo and control rotation.
 
-These short commands assume you added the plugin's `bin` directory to PATH, or created a launcher in `~/.local/bin`. The migrated local trial includes that launcher and forwards the old `omarchy-personal-wallpaper --pick/--pause/--resume` commands for compatibility. The menu always uses its absolute executable path. `resume` resets the countdown; it does not change the photo immediately. The source directory is separate from the managed background collection, so original files are never edited. Removing a source photo removes only its generated wallpaper copy; the currently displayed copy stays until it is no longer in use.
+Under **Color Mode**, choose:
 
-## Migration and data
+- **Auto · Match Photo** to let the photo's brightness guide the choice of light or dark colors.
+- **Dark** or **Light** to keep your preferred mode while the colors follow each photo.
+- **Wallpaper Only** to change photos without changing the palette.
 
-Previously named **Personal Theme**. To upgrade an existing installation, first run `omarchy plugin disable io.github.olivoil.personal-theme`, then install Photo Theme using the command above. First activation imports the previous settings, cached photos, pause state, and Drive connection. After verifying Photo Theme works, remove the old plugin through Omarchy's plugin menu. The previous repository URL redirects to this one.
+Right-click the bar icon to switch between dark and light. If you were using Auto, choose it again from the menu when you want photos to guide the mode.
 
-First activation imports the prototype's Drive folder, existing rclone remote, pause preference, cached photos, and palette, when present. It does not copy OAuth credentials into this repository or the plugin. Configuration is under `~/.config/omarchy-photo-theme`, worker state under `~/.local/state/omarchy-photo-theme`, and downloaded images under `~/.cache/omarchy-photo-theme`.
+Photos rotate hourly by default. Change the interval under **Settings → Rotation Interval**, or use **Pause Rotation** to keep a favorite on screen. It stays paused until you choose **Resume Rotation**, even after a restart.
 
-Before migrating a live prototype, disable its `omarchy-matugen.path`, `omarchy-bg-rotate.timer`, `omarchy-personal-wallpaper.timer`, and `omarchy-drive-wallpapers.timer`, and archive its `personal-wallpaper-rotation` theme hook. This prevents two owners of the same wallpaper. The local trial migration has done this separately from plugin installation; the plugin installer does not run privileged scripts or remove an unrelated installation automatically.
+Rotation only runs while Photo Theme is selected. Switch to another Omarchy theme whenever you like.
 
-Disable through Omarchy's plugin menu. Removing the plugin preserves your photos, generated theme, and settings. Menu entries are withdrawn on disable; unrelated menu entries are preserved, with the original JSONC backed up before migration. The generated theme remains static when the plugin is disabled.
+## Add more photos
 
-## Development
+Add them to your source folder. Photo Theme checks for changes every 15 minutes; choose **Sync Photos Now** to check sooner. Downloaded photos remain available offline.
+
+## Update or remove
+
+Update:
 
 ```bash
-python -m unittest discover -s tests -v
-omarchy plugin validate .
+omarchy plugin update io.github.olivoil.photo-theme
 ```
 
-Tests use temporary directories and mock only desktop commands. They cover picker selection and cancellation, theme guards, persistent pause, transitions, migration, safe JSONC parsing, source publishing, and stale lifecycle callbacks. Live validation additionally exercises native picker IPC, generated colors, switching themes, and disabling/re-enabling the plugin.
+You can disable or remove Photo Theme through Omarchy's plugin menu. This stops its background work and keeps your photos and settings.
 
-## Credits and license
+For terminal commands, requirements, or help upgrading from Personal Theme, see the [reference](docs/reference.md).
 
-MIT. The palette template and integration approach build on [Robin Bohrer's omarchy-auto-theme](https://github.com/AccursedGalaxy/omarchy-auto-theme); its MIT notice is retained in `LICENSE.omarchy-auto-theme`. Matugen is an external GPLv2 dependency, not vendored. rclone and ImageMagick are external dependencies. Personal photos and credentials are never part of this repository.
+## Thanks
+
+Photo Theme builds on [Robin Bohrer's omarchy-auto-theme](https://github.com/AccursedGalaxy/omarchy-auto-theme). [Matugen](https://github.com/InioX/matugen) creates the color palettes, and [rclone](https://rclone.org/) handles Google Drive downloads.
+
+Photo Theme is [MIT-licensed](LICENSE). The [original integration's license](LICENSE.omarchy-auto-theme) is included; Matugen is a separate GPLv2 dependency.
