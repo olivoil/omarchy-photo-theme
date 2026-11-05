@@ -1,4 +1,4 @@
-# Personal Theme development
+# Photo Theme development
 
 Keep this a user-owned Omarchy plugin. Never modify packaged Omarchy files.
 Do not commit photos, OAuth credentials, local config, or caches. Matugen is an external GPLv2 dependency; retain LICENSE.omarchy-auto-theme for the reused MIT palette template.

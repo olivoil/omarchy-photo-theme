@@ -1,17 +1,17 @@
-# Personal Theme
+# Photo Theme
 
 Your personal photos as Omarchy wallpapers, with optional matching colors.
 
-![Personal Theme's native Omarchy photo carousel, showing landscape wallpapers](preview.png)
+![Photo Theme's native Omarchy photo carousel, showing landscape wallpapers](preview.png)
 
 An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional bar button, and one background service. It supports a local folder or read-only Google Drive syncing. Photos can come from Apple Photos, Google Photos, Immich, or anywhere else: export them into your chosen source folder.
 
 ## Features
 
-- A **Personal Theme** entry in Omarchy's theme picker, with a preview.
-- **Appearance → Personal Theme**: choose a photo, next photo, pause/resume, sync, status, and settings.
+- A **Photo Theme** entry in Omarchy's theme picker, with a preview.
+- **Appearance → Photo Theme**: choose a photo, next photo, pause/resume, sync, status, and settings.
 - Omarchy's standard background picker. Confirming a selection applies the image and then its colors.
-- Rotation every 15, 30, 60, 120, or 240 minutes, only while Personal Theme is selected.
+- Rotation every 15, 30, 60, 120, or 240 minutes, only while Photo Theme is selected.
 - Persistent pause, including after selecting another photo or restarting the shell.
 - Matching dark colors, matching light colors, or wallpaper only.
 - **Color Mode → Auto · Match Photo / Dark / Light / Wallpaper Only** in the main plugin menu. Auto uses Matugen's smart mode to choose dark or light from each photo's overall perceptual brightness. It is a visual heuristic, not a prediction of personal aesthetic preference. It only re-evaluates when the photo or color settings change.
@@ -25,38 +25,40 @@ An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional 
 Dependencies: Omarchy 4.x, Python 3.11+, ImageMagick, Matugen 4.2+ (for adaptive colors including Auto), rclone (for Google Drive), and Zenity (for choosing a folder).
 
 ```bash
-omarchy plugin add https://github.com/olivoil/omarchy-personal-theme --enable
+omarchy plugin add https://github.com/olivoil/omarchy-photo-theme --enable
 ```
 
-Update with `omarchy plugin update io.github.olivoil.personal-theme`. A local checkout can also be installed with `omarchy plugin add /absolute/path/to/checkout --enable --yes`.
+Update with `omarchy plugin update io.github.olivoil.photo-theme`. A local checkout can also be installed with `omarchy plugin add /absolute/path/to/checkout --enable --yes`.
 
-Open **Appearance → Personal Theme → Settings**. Use **Install Dependencies** if needed, then choose **Use Local Folder** or **Connect Google Drive Folder**. The latter asks for a folder link and opens Google authorization if a connection is not already available. Google Drive access is read-only. rclone's shared OAuth client may require replacement with your own client ID; see [rclone's Drive documentation](https://rclone.org/drive/#making-your-own-client-id).
+Open **Appearance → Photo Theme → Settings**. Use **Install Dependencies** if needed, then choose **Use Local Folder** or **Connect Google Drive Folder**. The latter asks for a folder link and opens Google authorization if a connection is not already available. Google Drive access is read-only. rclone's shared OAuth client may require replacement with your own client ID; see [rclone's Drive documentation](https://rclone.org/drive/#making-your-own-client-id).
 
-Select **Personal Theme** from the theme picker, or choose a photo from its menu. On a new installation, the neutral theme preview is replaced after photos have been imported. Network syncing is enabled only after choosing Drive; a local source never contacts a photo service.
+Select **Photo Theme** from the theme picker, or choose a photo from its menu. On a new installation, the neutral theme preview is replaced after photos have been imported. Network syncing is enabled only after choosing Drive; a local source never contacts a photo service.
 
 ## Commands
 
-The executable is `bin/personal-theme` inside the installed plugin directory, normally `~/.config/omarchy/plugins/io.github.olivoil.personal-theme/bin/personal-theme`.
+The executable is `bin/photo-theme` inside the installed plugin directory, normally `~/.config/omarchy/plugins/io.github.olivoil.photo-theme/bin/photo-theme`.
 
 ```bash
-personal-theme pick
-personal-theme next
-personal-theme set "/path/to/a/photo/in/the/managed/collection.jpg"
-personal-theme pause
-personal-theme resume
-personal-theme status
-personal-theme request-sync
-personal-theme configure interval 60
-personal-theme configure appearance dark   # light, smart, or fixed also supported
-personal-theme configure appearance smart  # choose dark/light from each photo
-personal-theme toggle-mode                 # dark ↔ light, same photo
+photo-theme pick
+photo-theme next
+photo-theme set "/path/to/a/photo/in/the/managed/collection.jpg"
+photo-theme pause
+photo-theme resume
+photo-theme status
+photo-theme request-sync
+photo-theme configure interval 60
+photo-theme configure appearance dark   # light, smart, or fixed also supported
+photo-theme configure appearance smart  # choose dark/light from each photo
+photo-theme toggle-mode                 # dark ↔ light, same photo
 ```
 
 These short commands assume you added the plugin's `bin` directory to PATH, or created a launcher in `~/.local/bin`. The migrated local trial includes that launcher and forwards the old `omarchy-personal-wallpaper --pick/--pause/--resume` commands for compatibility. The menu always uses its absolute executable path. `resume` resets the countdown; it does not change the photo immediately. The source directory is separate from the managed background collection, so original files are never edited. Removing a source photo removes only its generated wallpaper copy; the currently displayed copy stays until it is no longer in use.
 
 ## Migration and data
 
-First activation imports the prototype's Drive folder, existing rclone remote, pause preference, cached photos, and palette, when present. It does not copy OAuth credentials into this repository or the plugin. Configuration is under `~/.config/omarchy-personal-theme`, worker state under `~/.local/state/omarchy-personal-theme`, and downloaded images under `~/.cache/omarchy-personal-theme`.
+Previously named **Personal Theme**. To upgrade an existing installation, first run `omarchy plugin disable io.github.olivoil.personal-theme`, then install Photo Theme using the command above. First activation imports the previous settings, cached photos, pause state, and Drive connection. After verifying Photo Theme works, remove the old plugin through Omarchy's plugin menu. The previous repository URL redirects to this one.
+
+First activation imports the prototype's Drive folder, existing rclone remote, pause preference, cached photos, and palette, when present. It does not copy OAuth credentials into this repository or the plugin. Configuration is under `~/.config/omarchy-photo-theme`, worker state under `~/.local/state/omarchy-photo-theme`, and downloaded images under `~/.cache/omarchy-photo-theme`.
 
 Before migrating a live prototype, disable its `omarchy-matugen.path`, `omarchy-bg-rotate.timer`, `omarchy-personal-wallpaper.timer`, and `omarchy-drive-wallpapers.timer`, and archive its `personal-wallpaper-rotation` theme hook. This prevents two owners of the same wallpaper. The local trial migration has done this separately from plugin installation; the plugin installer does not run privileged scripts or remove an unrelated installation automatically.
 

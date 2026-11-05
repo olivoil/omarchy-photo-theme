@@ -20,8 +20,8 @@ class PersonalThemeTests(unittest.TestCase):
         mapping = {
             'HOME': self.home, 'CONFIG': self.home / '.config/plugin',
             'STATE': self.home / '.local/state/plugin', 'CACHE': self.home / '.cache/plugin',
-            'THEME': self.home / '.config/omarchy/themes/personal-theme',
-            'BACKGROUNDS': self.home / '.config/omarchy/backgrounds/personal-theme',
+            'THEME': self.home / '.config/omarchy/themes/photo-theme',
+            'BACKGROUNDS': self.home / '.config/omarchy/backgrounds/photo-theme',
             'CURRENT': self.home / '.local/state/omarchy/current',
             'MENU': self.home / '.config/omarchy/extensions/omarchy-menu.jsonc',
         }
@@ -34,7 +34,7 @@ class PersonalThemeTests(unittest.TestCase):
         photos.THEME.mkdir(parents=True)
         photos.write(photos.STATE / 'lease.json', {'enabled': True, 'lease': 'new'})
         photos.write(photos.CONFIG / 'settings.json', photos.DEFAULTS)
-        (photos.CURRENT / 'theme.name').write_text('personal-theme\n')
+        (photos.CURRENT / 'theme.name').write_text('photo-theme\n')
         self.first = photos.BACKGROUNDS / 'a photo.jpg'
         self.second = photos.BACKGROUNDS / 'another photo.jpg'
         self.first.write_bytes(b'first')
@@ -133,6 +133,27 @@ class PersonalThemeTests(unittest.TestCase):
         self.assertEqual((photos.BACKGROUNDS / 'old.jpg').read_bytes(), b'personal original')
         self.assertTrue((old_photos / 'old.jpg').exists())
 
+    def test_personal_theme_migration_preserves_all_preferences(self):
+        (photos.CONFIG / 'settings.json').unlink()
+        old = self.home / '.config/omarchy-personal-theme/settings.json'
+        expected = {**photos.DEFAULTS, 'mode': 'smart', 'paused': True, 'interval': 120,
+                    'source': 'drive', 'drive_remote': 'existing:', 'drive_folder': 'example-id'}
+        photos.write(old, expected)
+        photos.write(self.home / '.local/state/omarchy-personal-theme/lease.json', {'enabled': False})
+        old_photos = self.home / '.config/omarchy/backgrounds/personal-theme'
+        old_photos.mkdir(parents=True)
+        (old_photos / 'saved.jpg').write_bytes(b'photo')
+        photos.migrate()
+        self.assertEqual(photos.settings(), expected)
+        self.assertEqual((photos.BACKGROUNDS / 'saved.jpg').read_bytes(), b'photo')
+        self.assertTrue((old_photos / 'saved.jpg').exists())
+
+    def test_migration_refuses_two_active_photo_services(self):
+        (photos.CONFIG / 'settings.json').unlink()
+        photos.write(self.home / '.config/omarchy-personal-theme/settings.json', photos.DEFAULTS)
+        photos.write(self.home / '.local/state/omarchy-personal-theme/lease.json', {'enabled': True})
+        with self.assertRaises(ValueError): photos.migrate()
+
     def test_disable_withdraws_only_plugin_menu_entries(self):
         photos.MENU.parent.mkdir(parents=True)
         photos.MENU.write_text('{"custom.notes":{"label":"Notes"}}')
@@ -148,7 +169,7 @@ class PersonalThemeTests(unittest.TestCase):
         with patch.object(photos, 'run'):
             photos.install_menu()
         values = photos.read(photos.MENU)
-        self.assertIn('appearance.personal-theme.choose', values)
+        self.assertIn('appearance.photo-theme.choose', values)
         self.assertEqual(values['custom.notes']['action'], 'notes')
         self.assertFalse(any(k.startswith('style.personal-') for k in values))
 
@@ -200,7 +221,7 @@ class PersonalThemeTests(unittest.TestCase):
         self.assertTrue(photos.settings()['adaptive'])
         self.assertTrue(photos.settings()['paused'])
         self.assertTrue(photos.status()['colorDue'])
-        self.assertIn(['omarchy-shell', 'io.github.olivoil.personal-theme.service', 'refresh'],
+        self.assertIn(['omarchy-shell', 'io.github.olivoil.photo-theme.service', 'refresh'],
                       [call.args[0] for call in command.call_args_list])
 
     def test_toggle_mode_round_trip(self):
@@ -213,9 +234,9 @@ class PersonalThemeTests(unittest.TestCase):
     def test_color_mode_is_accessible_from_main_plugin_menu(self):
         with patch.object(photos, 'run'): photos.install_menu()
         menu = photos.read(photos.MENU)
-        self.assertIn('appearance.personal-theme.colors.light', menu)
-        self.assertIn('appearance.personal-theme.colors.dark', menu)
-        self.assertNotIn('appearance.personal-theme.settings.colors', menu)
+        self.assertIn('appearance.photo-theme.colors.light', menu)
+        self.assertIn('appearance.photo-theme.colors.dark', menu)
+        self.assertNotIn('appearance.photo-theme.settings.colors', menu)
 
     def test_photo_matching_passes_smart_mode_to_matugen(self):
         with patch.object(photos, 'run'):
@@ -248,7 +269,7 @@ class PersonalThemeTests(unittest.TestCase):
         with patch.object(photos, 'run'):
             photos.refresh_menu_after_update()
         menu = photos.read(photos.MENU)
-        self.assertIn('appearance.personal-theme.colors.auto', menu)
+        self.assertIn('appearance.photo-theme.colors.auto', menu)
         with patch.object(photos, 'install_menu') as install:
             photos.refresh_menu_after_update()
         install.assert_not_called()

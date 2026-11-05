@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "id": "io.github.olivoil.personal-theme",
-  "name": "Personal Theme",
-  "version": "0.1.0",
+  "id": "io.github.olivoil.photo-theme",
+  "name": "Photo Theme",
+  "version": "0.2.0",
   "author": "Olivier Melcher",
   "description": "Your photos as rotating wallpapers, with optional adaptive colors and Google Drive syncing.",
   "license": "MIT",
-  "repository": "https://github.com/olivoil/omarchy-personal-theme",
+  "repository": "https://github.com/olivoil/omarchy-photo-theme",
   "kinds": ["service", "bar-widget"],
   "keepLoaded": true,
   "entryPoints": {"service": "Service.qml", "barWidget": "BarWidget.qml"},
-  "barWidget": {"displayName": "Personal Theme", "description": "Choose photos and control rotation", "category": "Appearance", "allowMultiple": false, "defaultSection": "right"}
+  "barWidget": {"displayName": "Photo Theme", "description": "Choose photos and control rotation", "category": "Appearance", "allowMultiple": false, "defaultSection": "right"}
 }

@@ -1,4 +1,4 @@
-# Personal Theme
+# Photo Theme
 
 Register: product
 

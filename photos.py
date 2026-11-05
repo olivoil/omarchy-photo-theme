@@ -1,4 +1,4 @@
-"""Personal Theme's local worker. Matugen and rclone remain external tools."""
+"""Photo Theme's local worker. Matugen and rclone remain external tools."""
 import argparse
 from contextlib import contextmanager
 import fcntl
@@ -19,14 +19,14 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parent
 HOME = Path.home()
-CONFIG = HOME / '.config/omarchy-personal-theme'
-STATE = HOME / '.local/state/omarchy-personal-theme'
-CACHE = HOME / '.cache/omarchy-personal-theme'
-THEME = HOME / '.config/omarchy/themes/personal-theme'
-BACKGROUNDS = HOME / '.config/omarchy/backgrounds/personal-theme'
+CONFIG = HOME / '.config/omarchy-photo-theme'
+STATE = HOME / '.local/state/omarchy-photo-theme'
+CACHE = HOME / '.cache/omarchy-photo-theme'
+THEME = HOME / '.config/omarchy/themes/photo-theme'
+BACKGROUNDS = HOME / '.config/omarchy/backgrounds/photo-theme'
 CURRENT = HOME / '.local/state/omarchy/current'
 MENU = HOME / '.config/omarchy/extensions/omarchy-menu.jsonc'
-CLI = ROOT / 'bin/personal-theme'
+CLI = ROOT / 'bin/photo-theme'
 FORMATS = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.heic', '.heif'}
 DEFAULTS = {'source': 'local', 'folder': str(HOME / 'Pictures/Wallpapers'),
             'interval': 60, 'mode': 'dark', 'adaptive': True, 'paused': False,
@@ -104,7 +104,7 @@ def update(**changes):
 
 def active():
     path = CURRENT / 'theme.name'
-    return path.exists() and path.read_text().strip() == 'personal-theme'
+    return path.exists() and path.read_text().strip() == 'photo-theme'
 
 
 def enabled():
@@ -172,11 +172,11 @@ def ensure_theme():
         old = HOME / '.config/omarchy/themes/matugen-auto/colors.toml'
         stock = Path(os.environ.get('OMARCHY_PATH', '/usr/share/omarchy')) / 'themes/tokyo-night/colors.toml'
         shutil.copyfile(old if old.exists() else stock, palette)
-    template = {'templates.personal_theme': {
+    template = {'templates.photo_theme': {
         'input_path': str(ROOT / 'templates/colors.toml'), 'output_path': str(palette)}}
     CONFIG.mkdir(parents=True, exist_ok=True)
-    (CONFIG / 'matugen.toml').write_text('[config]\n\n[templates.personal_theme]\n'
-        + 'input_path = ' + json.dumps(template['templates.personal_theme']['input_path']) + '\n'
+    (CONFIG / 'matugen.toml').write_text('[config]\n\n[templates.photo_theme]\n'
+        + 'input_path = ' + json.dumps(template['templates.photo_theme']['input_path']) + '\n'
         + 'output_path = ' + json.dumps(str(palette)) + '\n')
     # Always provide a preview: Omarchy's visual theme picker requires it.
     if not (THEME / 'preview.png').exists():
@@ -238,14 +238,14 @@ def install_menu(remove=False):
         if MENU.exists() and not (STATE / 'menu-before.jsonc').exists():
             (STATE / 'menu-before.jsonc').write_text(original)
         entries = menu_json(original)
-        prefixes = ('appearance.personal-theme', 'appearance.personal-photos', 'style.personal-photos')
+        prefixes = ('appearance.photo-theme', 'appearance.personal-theme', 'appearance.personal-photos', 'style.personal-photos')
         for key in list(entries):
             if any(key == p or key.startswith(p + '.') for p in prefixes):
                 del entries[key]
         if not remove:
-            base = 'appearance.personal-theme'
+            base = 'appearance.photo-theme'
             executable = shlex.quote(str(CLI))
-            entries[base] = {'icon': '', 'label': 'Personal Theme', 'aliases': ['personal-theme', 'personal-photos'],
+            entries[base] = {'icon': '', 'label': 'Photo Theme', 'aliases': ['photo-theme', 'personal-theme', 'personal-photos'],
                              'when': executable + ' enabled', 'description': 'Your photos, wallpapers, and matching colors'}
             def action(key, label, command, **extra):
                 entries[base + '.' + key] = {'label': label, 'action': executable + ' ' + command, **extra}
@@ -288,8 +288,29 @@ def refresh_menu_after_update():
         install_menu()
 
 
+def link_or_copy(source, target):
+    try: os.link(source, target)
+    except FileExistsError: pass
+    except OSError: shutil.copy2(source, target)
+    return target
+
+
 def migrate():
     if (CONFIG / 'settings.json').exists():
+        return
+    previous_config = HOME / '.config/omarchy-personal-theme'
+    previous_state = HOME / '.local/state/omarchy-personal-theme'
+    if (previous_config / 'settings.json').exists():
+        if read(previous_state / 'lease.json').get('enabled'):
+            raise ValueError('Disable Personal Theme before enabling Photo Theme.')
+        for source, target, copier in (
+            (previous_config, CONFIG, shutil.copy2),
+            (previous_state, STATE, shutil.copy2),
+            (HOME / '.cache/omarchy-personal-theme', CACHE, link_or_copy),
+            (HOME / '.config/omarchy/themes/personal-theme', THEME, shutil.copy2),
+            (HOME / '.config/omarchy/backgrounds/personal-theme', BACKGROUNDS, link_or_copy),
+        ):
+            if source.is_dir(): shutil.copytree(source, target, copy_function=copier, dirs_exist_ok=True)
         return
     config = DEFAULTS.copy()
     old = HOME / '.config/omarchy-drive-wallpapers/source.json'
@@ -405,8 +426,8 @@ def publish(source):
 def apply_photo(path):
     path = Path(path).expanduser().resolve()
     allowed = {p.resolve() for p in library()}
-    if path not in allowed: raise ValueError('Choose a photo from the Personal Theme collection.')
-    if not active(): run(['omarchy', 'theme', 'set', 'personal-theme'], env={**os.environ, 'OMARCHY_THEME_WAIT': '1'})
+    if path not in allowed: raise ValueError('Choose a photo from the Photo Theme collection.')
+    if not active(): run(['omarchy', 'theme', 'set', 'photo-theme'], env={**os.environ, 'OMARCHY_THEME_WAIT': '1'})
     run(['omarchy', 'theme', 'bg', 'set', path])
     write(STATE / 'rotation.json', {'active': True, 'at': time.time()})
 
@@ -456,7 +477,7 @@ def tick():
 def notify(message):
     # All callers pass our fixed copy, never photo names or network responses.
     if shutil.which('omarchy-notification-send'):
-        subprocess.run(['omarchy-notification-send', 'Personal Theme', message], check=False)
+        subprocess.run(['omarchy-notification-send', 'Photo Theme', message], check=False)
 
 
 def configure(key, value):
@@ -472,7 +493,7 @@ def configure(key, value):
     else: raise ValueError('Unknown setting')
     run(['omarchy', 'menu', 'refresh'])
     if enabled():
-        run(['omarchy-shell', 'io.github.olivoil.personal-theme.service', 'refresh'])
+        run(['omarchy-shell', 'io.github.olivoil.photo-theme.service', 'refresh'])
 
 
 def toggle_mode():
@@ -481,7 +502,7 @@ def toggle_mode():
 
 
 def choose_folder():
-    value = run(['zenity', '--file-selection', '--directory', '--title=Personal Theme: choose photo folder'])
+    value = run(['zenity', '--file-selection', '--directory', '--title=Photo Theme: choose photo folder'])
     if value:
         update(source='local', folder=str(Path(value).expanduser().resolve()))
         request_sync()
@@ -493,7 +514,7 @@ def connect_drive():
     match = re.fullmatch(r'(?:https://drive\.google\.com/drive/(?:u/\d+/)?folders/)?([A-Za-z0-9_-]{10,})(?:\?[^\s]*)?', value.strip())
     if not match: raise ValueError('Enter a Google Drive folder link or folder ID.')
     remotes = run(['rclone', 'listremotes']).splitlines()
-    remote = settings()['drive_remote'] or 'personal-theme-drive:'
+    remote = settings()['drive_remote'] or 'photo-theme-drive:'
     if remote not in remotes:
         # Captured output can contain credentials; never print or log it.
         run(['rclone', 'config', 'create', remote.rstrip(':'), 'drive', 'scope', 'drive.readonly', 'config_is_local', 'true'], timeout=600)
@@ -502,12 +523,12 @@ def connect_drive():
 
 
 def request_sync():
-    run(['omarchy-shell', 'io.github.olivoil.personal-theme.service', 'sync'])
+    run(['omarchy-shell', 'io.github.olivoil.photo-theme.service', 'sync'])
 
 
 def main():
     signal.signal(signal.SIGTERM, terminate_children)
-    parser = argparse.ArgumentParser(description='Personal Theme for Omarchy')
+    parser = argparse.ArgumentParser(description='Photo Theme for Omarchy')
     parser.add_argument('action', choices=['activate', 'deactivate', 'status', 'enabled', 'tick', 'sync', 'pick', 'set', 'next', 'pause', 'resume', 'is-paused', 'is-running', 'matches', 'configure', 'toggle-mode', 'choose-folder', 'connect-drive', 'request-sync', 'show-status', 'install-dependencies'])
     parser.add_argument('values', nargs='*')
     args = parser.parse_args()
@@ -548,7 +569,7 @@ def main():
         elif action == 'install-dependencies':
             subprocess.Popen(['omarchy-launch-floating-terminal-with-presentation', 'omarchy pkg add matugen rclone imagemagick zenity'])
     except (RuntimeError, ValueError, OSError, subprocess.TimeoutExpired) as error:
-        print(f'Personal Theme: {error}', file=sys.stderr)
+        print(f'Photo Theme: {error}', file=sys.stderr)
         if action not in ('tick', 'sync', 'status', 'activate', 'deactivate'):
             notify('Action could not finish. Check the plugin log and source settings.')
         sys.exit(1)
