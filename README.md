@@ -22,7 +22,11 @@ An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional 
 
 Dependencies: Omarchy 4.x, Python 3.11+, ImageMagick, Matugen 4.2+ (for adaptive colors including Auto), rclone (for Google Drive), and Zenity (for choosing a folder).
 
-Install from the repository with `omarchy plugin add <repository-url> --enable`. A local checkout can also be installed with `omarchy plugin add /absolute/path/to/checkout --enable --yes`. This project is not yet published to a remote repository.
+```bash
+omarchy plugin add https://github.com/olivoil/omarchy-personal-theme --enable
+```
+
+Update with `omarchy plugin update io.github.olivoil.personal-theme`. A local checkout can also be installed with `omarchy plugin add /absolute/path/to/checkout --enable --yes`.
 
 Open **Appearance → Personal Theme → Settings**. Use **Install Dependencies** if needed, then choose **Use Local Folder** or **Connect Google Drive Folder**. The latter asks for a folder link and opens Google authorization if a connection is not already available. Google Drive access is read-only. rclone's shared OAuth client may require replacement with your own client ID; see [rclone's Drive documentation](https://rclone.org/drive/#making-your-own-client-id).
 
