@@ -251,6 +251,11 @@ def install_menu(remove=False):
                 entries[base + '.' + key] = {'label': label, 'action': executable + ' ' + command, **extra}
             action('choose', 'Choose Photo', 'pick', icon='')
             action('next', 'Next Photo', 'next', icon='󰒭')
+            entries[base + '.colors'] = {'label': 'Color Mode', 'icon': '󰔎'}
+            action('colors.auto', 'Auto · Match Photo', 'configure appearance smart', checked=executable + ' matches appearance smart')
+            action('colors.dark', 'Dark', 'configure appearance dark', checked=executable + ' matches appearance dark')
+            action('colors.light', 'Light', 'configure appearance light', checked=executable + ' matches appearance light')
+            action('colors.fixed', 'Wallpaper Only', 'configure appearance fixed', checked=executable + ' matches appearance fixed')
             action('pause', 'Pause Rotation', 'pause', when=executable + ' is-running', icon='󰏤')
             action('resume', 'Resume Rotation', 'resume', when=executable + ' is-paused', icon='󰐊')
             action('sync', 'Sync Photos Now', 'request-sync', icon='󰑐')
@@ -262,11 +267,6 @@ def install_menu(remove=False):
             for minutes in (15, 30, 60, 120, 240):
                 action(f'settings.interval.m{minutes}', f'Every {minutes} minutes', f'configure interval {minutes}',
                        checked=executable + f' matches interval {minutes}')
-            entries[base + '.colors'] = {'label': 'Color Mode', 'icon': '󰔎'}
-            action('colors.auto', 'Auto · Match Photo', 'configure appearance smart', checked=executable + ' matches appearance smart')
-            action('colors.dark', 'Dark', 'configure appearance dark', checked=executable + ' matches appearance dark')
-            action('colors.light', 'Light', 'configure appearance light', checked=executable + ' matches appearance light')
-            action('colors.fixed', 'Wallpaper Only', 'configure appearance fixed', checked=executable + ' matches appearance fixed')
             action('settings.dependencies', 'Install Dependencies', 'install-dependencies')
         # Preserve existing JSONC comments and layout outside owned entries.
         # The original is backed up; unrelated entry values remain identical.
