@@ -243,5 +243,21 @@ class PersonalThemeTests(unittest.TestCase):
         self.assertEqual(state['mode'], 'smart')
         self.assertEqual(state['resolvedMode'], 'light')
 
+    def test_retained_service_repairs_menu_after_backend_update(self):
+        photos.write(photos.STATE / 'menu-revision.json', {'revision': 'previous-version'})
+        with patch.object(photos, 'run'):
+            photos.refresh_menu_after_update()
+        menu = photos.read(photos.MENU)
+        self.assertIn('appearance.personal-theme.colors.auto', menu)
+        with patch.object(photos, 'install_menu') as install:
+            photos.refresh_menu_after_update()
+        install.assert_not_called()
+
+    def test_disabled_plugin_does_not_restore_menu(self):
+        photos.write(photos.STATE / 'lease.json', {'enabled': False})
+        with patch.object(photos, 'install_menu') as install:
+            photos.refresh_menu_after_update()
+        install.assert_not_called()
+
 
 if __name__ == '__main__': unittest.main()

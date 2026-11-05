@@ -273,6 +273,19 @@ def install_menu(remove=False):
         write(MENU, entries)
     if shutil.which('omarchy'):
         run(['omarchy', 'menu', 'refresh'])
+    if not remove:
+        write(STATE / 'menu-revision.json', {'revision': menu_revision()})
+
+
+def menu_revision():
+    return str(CLI) + ':' + hashlib.sha256((ROOT / 'photos.py').read_bytes()).hexdigest()
+
+
+def refresh_menu_after_update():
+    # Omarchy can retain a loaded service across a plugin update. Its next
+    # backend status check must publish new menu entries without a restart.
+    if enabled() and read(STATE / 'menu-revision.json').get('revision') != menu_revision():
+        install_menu()
 
 
 def migrate():
@@ -502,7 +515,9 @@ def main():
     try:
         if action == 'activate': activate(values[0])
         elif action == 'deactivate': deactivate(values[0])
-        elif action == 'status': print(json.dumps(status()))
+        elif action == 'status':
+            refresh_menu_after_update()
+            print(json.dumps(status()))
         elif action == 'enabled': sys.exit(0 if enabled() else 1)
         elif action == 'tick': tick()
         elif action == 'sync': sync()
