@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 
 ROOT = Path(__file__).resolve().parent
 HOME = Path.home()
@@ -126,6 +127,15 @@ def fingerprint(path, config):
     return f'{path}:{stat.st_size}:{stat.st_mtime_ns}:{config["mode"]}:{config["adaptive"]}'
 
 
+def resolved_mode():
+    palette = THEME / 'colors.toml'
+    if palette.exists():
+        mode = tomllib.loads(palette.read_text()).get('mode')
+        if mode in ('light', 'dark'): return mode
+    mode = settings()['mode']
+    return mode if mode in ('light', 'dark') else 'dark'
+
+
 def status(now=None):
     now = time.time() if now is None else now
     config = settings()
@@ -137,6 +147,7 @@ def status(now=None):
     running = enabled()
     return {'enabled': running, 'active': selected, 'paused': config['paused'],
             'count': len(available), 'interval': config['interval'], 'mode': config['mode'],
+            'resolvedMode': resolved_mode(),
             'adaptive': config['adaptive'], 'source': config['source'],
             'transitionDue': running and rotation.get('active') != selected,
             'rotationDue': running and selected and not config['paused'] and len(available) > 1
@@ -252,6 +263,7 @@ def install_menu(remove=False):
                 action(f'settings.interval.m{minutes}', f'Every {minutes} minutes', f'configure interval {minutes}',
                        checked=executable + f' matches interval {minutes}')
             entries[base + '.colors'] = {'label': 'Color Mode', 'icon': '󰔎'}
+            action('colors.auto', 'Auto · Match Photo', 'configure appearance smart', checked=executable + ' matches appearance smart')
             action('colors.dark', 'Dark', 'configure appearance dark', checked=executable + ' matches appearance dark')
             action('colors.light', 'Light', 'configure appearance light', checked=executable + ' matches appearance light')
             action('colors.fixed', 'Wallpaper Only', 'configure appearance fixed', checked=executable + ' matches appearance fixed')
@@ -441,7 +453,7 @@ def configure(key, value):
         update(interval=value)
         write(STATE / 'rotation.json', {'active': active(), 'at': time.time()})
     elif key == 'appearance':
-        if value not in ('dark', 'light', 'fixed'): raise ValueError('Invalid appearance')
+        if value not in ('dark', 'light', 'smart', 'fixed'): raise ValueError('Invalid appearance')
         update(adaptive=value != 'fixed', **({'mode': value} if value != 'fixed' else {}))
         write(STATE / 'color.json', {})
     else: raise ValueError('Unknown setting')
@@ -451,7 +463,8 @@ def configure(key, value):
 
 
 def toggle_mode():
-    configure('appearance', 'light' if settings()['mode'] == 'dark' else 'dark')
+    current = resolved_mode() if settings()['mode'] == 'smart' else settings()['mode']
+    configure('appearance', 'light' if current == 'dark' else 'dark')
 
 
 def choose_folder():

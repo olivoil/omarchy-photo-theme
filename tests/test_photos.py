@@ -217,5 +217,31 @@ class PersonalThemeTests(unittest.TestCase):
         self.assertIn('appearance.personal-theme.colors.dark', menu)
         self.assertNotIn('appearance.personal-theme.settings.colors', menu)
 
+    def test_photo_matching_passes_smart_mode_to_matugen(self):
+        with patch.object(photos, 'run'):
+            photos.configure('appearance', 'smart')
+        self.assertEqual(photos.settings()['mode'], 'smart')
+        with patch.object(photos, 'run') as command:
+            photos.tick()
+        matugen = [call.args[0] for call in command.call_args_list if call.args[0][0] == 'matugen'][0]
+        self.assertEqual(matugen[matugen.index('--mode') + 1], 'smart')
+
+    def test_toggle_from_auto_overrides_actual_displayed_mode(self):
+        photos.update(mode='smart')
+        (photos.THEME / 'colors.toml').write_text('mode = "dark"\n')
+        with patch.object(photos, 'run'): photos.toggle_mode()
+        self.assertEqual(photos.settings()['mode'], 'light')
+        photos.update(mode='smart')
+        (photos.THEME / 'colors.toml').write_text('mode = "light"\n')
+        with patch.object(photos, 'run'): photos.toggle_mode()
+        self.assertEqual(photos.settings()['mode'], 'dark')
+
+    def test_auto_selection_and_resolved_mode_are_separate(self):
+        photos.update(mode='smart')
+        (photos.THEME / 'colors.toml').write_text('mode = "light"\n')
+        state = photos.status()
+        self.assertEqual(state['mode'], 'smart')
+        self.assertEqual(state['resolvedMode'], 'light')
+
 
 if __name__ == '__main__': unittest.main()

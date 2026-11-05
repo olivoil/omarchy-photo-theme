@@ -12,14 +12,15 @@ An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional 
 - Rotation every 15, 30, 60, 120, or 240 minutes, only while Personal Theme is selected.
 - Persistent pause, including after selecting another photo or restarting the shell.
 - Matching dark colors, matching light colors, or wallpaper only.
-- **Color Mode → Dark / Light / Wallpaper Only** in the main plugin menu. Right-click its bar icon to toggle dark/light for the same photo.
+- **Color Mode → Auto · Match Photo / Dark / Light / Wallpaper Only** in the main plugin menu. Auto uses Matugen's smart mode to choose dark or light from each photo's overall perceptual brightness. It is a visual heuristic, not a prediction of personal aesthetic preference. It only re-evaluates when the photo or color settings change.
+- Right-click the bar icon to toggle dark/light for the same photo. From Auto, this sets a manual override based on the displayed mode; choose Auto again to follow future photos.
 - Local folders and optional Google Drive downloads, checked every 15 minutes.
 - HEIC/HEIF conversion. Supported images up to 100 MiB; up to 10,000 photos per local source.
 - Disabling the plugin stops scheduling and workers. No systemd units or permanent theme hooks are needed.
 
 ## Install
 
-Dependencies: Omarchy 4.x, Python 3, ImageMagick, Matugen (for adaptive colors), rclone (for Google Drive), and Zenity (for choosing a folder).
+Dependencies: Omarchy 4.x, Python 3.11+, ImageMagick, Matugen 4.2+ (for adaptive colors including Auto), rclone (for Google Drive), and Zenity (for choosing a folder).
 
 Install from the repository with `omarchy plugin add <repository-url> --enable`. A local checkout can also be installed with `omarchy plugin add /absolute/path/to/checkout --enable --yes`. This project is not yet published to a remote repository.
 
@@ -40,7 +41,8 @@ personal-theme resume
 personal-theme status
 personal-theme request-sync
 personal-theme configure interval 60
-personal-theme configure appearance dark   # light or fixed also supported
+personal-theme configure appearance dark   # light, smart, or fixed also supported
+personal-theme configure appearance smart  # choose dark/light from each photo
 personal-theme toggle-mode                 # dark ↔ light, same photo
 ```
 
