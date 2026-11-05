@@ -2,6 +2,8 @@
 
 Your personal photos as Omarchy wallpapers, with optional matching colors.
 
+![Personal Theme's native Omarchy photo carousel, showing landscape wallpapers](preview.png)
+
 An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional bar button, and one background service. It supports a local folder or read-only Google Drive syncing. Photos can come from Apple Photos, Google Photos, Immich, or anywhere else: export them into your chosen source folder.
 
 ## Features
