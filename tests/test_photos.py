@@ -116,6 +116,32 @@ class PersonalThemeTests(unittest.TestCase):
         self.assertTrue(photos.enabled())
         menu.assert_not_called()
 
+    def test_prototype_migration_preserves_photos_source_and_pause(self):
+        (photos.CONFIG / 'settings.json').unlink()
+        source = self.home / '.config/omarchy-drive-wallpapers/source.json'
+        photos.write(source, {'remote': 'existing-drive:', 'folder_id': 'example-folder-id'})
+        paused = self.home / '.local/state/omarchy/personal-wallpaper.paused'
+        paused.touch()
+        old_photos = self.home / '.config/omarchy/backgrounds/matugen-auto'
+        old_photos.mkdir(parents=True)
+        (old_photos / 'old.jpg').write_bytes(b'personal original')
+        photos.migrate()
+        config = photos.settings()
+        self.assertEqual(config['source'], 'drive')
+        self.assertEqual(config['drive_remote'], 'existing-drive:')
+        self.assertTrue(config['paused'])
+        self.assertEqual((photos.BACKGROUNDS / 'old.jpg').read_bytes(), b'personal original')
+        self.assertTrue((old_photos / 'old.jpg').exists())
+
+    def test_disable_withdraws_only_plugin_menu_entries(self):
+        photos.MENU.parent.mkdir(parents=True)
+        photos.MENU.write_text('{"custom.notes":{"label":"Notes"}}')
+        with patch.object(photos, 'run'):
+            photos.install_menu()
+            photos.deactivate('new')
+        self.assertFalse(photos.enabled())
+        self.assertEqual(photos.read(photos.MENU), {'custom.notes': {'label': 'Notes'}})
+
     def test_menu_is_under_appearance_and_preserves_unrelated_entries(self):
         photos.MENU.parent.mkdir(parents=True)
         photos.MENU.write_text('// custom menu\n{"custom.notes":{"label":"Notes","action":"notes"}}')
