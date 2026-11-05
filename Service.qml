@@ -37,8 +37,8 @@ Item {
       onStreamFinished: {
         root.lastStatus = String(text || "{}")
         try {
-          var state = JSON.parse(root.lastStatus)
-          if (state.colorDue || state.rotationDue) root.updateColors()
+          let state = JSON.parse(root.lastStatus)
+          if (state.transitionDue || state.colorDue || state.rotationDue) root.updateColors()
           if (state.syncDue) root.sync()
         } catch (e) { console.warn("Personal Theme: invalid status") }
       }

@@ -1,15 +1,15 @@
 import QtQuick
 import Quickshell
-import qs.Ui
+import qs.Ui as Ui
 import qs.Commons as Commons
 
-BarWidget {
+Ui.BarWidget {
   id: root
   moduleName: "io.github.olivoil.personal-theme"
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
-  BarIconButton {
+  Ui.BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar

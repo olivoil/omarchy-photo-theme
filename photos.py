@@ -291,8 +291,9 @@ def migrate():
 def activate(lease):
     migrate()
     ensure_theme()
-    write(STATE / 'lease.json', {'enabled': True, 'lease': lease})
-    install_menu()
+    with locked('lease'):
+        write(STATE / 'lease.json', {'enabled': True, 'lease': lease})
+        install_menu()
 
 
 def deactivate(lease):
