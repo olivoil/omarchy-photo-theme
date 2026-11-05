@@ -251,10 +251,10 @@ def install_menu(remove=False):
             for minutes in (15, 30, 60, 120, 240):
                 action(f'settings.interval.m{minutes}', f'Every {minutes} minutes', f'configure interval {minutes}',
                        checked=executable + f' matches interval {minutes}')
-            entries[base + '.settings.colors'] = {'label': 'Colors'}
-            action('settings.colors.dark', 'Matching Dark Colors', 'configure appearance dark', checked=executable + ' matches appearance dark')
-            action('settings.colors.light', 'Matching Light Colors', 'configure appearance light', checked=executable + ' matches appearance light')
-            action('settings.colors.fixed', 'Wallpaper Only', 'configure appearance fixed', checked=executable + ' matches appearance fixed')
+            entries[base + '.colors'] = {'label': 'Color Mode', 'icon': '󰔎'}
+            action('colors.dark', 'Dark', 'configure appearance dark', checked=executable + ' matches appearance dark')
+            action('colors.light', 'Light', 'configure appearance light', checked=executable + ' matches appearance light')
+            action('colors.fixed', 'Wallpaper Only', 'configure appearance fixed', checked=executable + ' matches appearance fixed')
             action('settings.dependencies', 'Install Dependencies', 'install-dependencies')
         # Preserve existing JSONC comments and layout outside owned entries.
         # The original is backed up; unrelated entry values remain identical.
@@ -446,6 +446,12 @@ def configure(key, value):
         write(STATE / 'color.json', {})
     else: raise ValueError('Unknown setting')
     run(['omarchy', 'menu', 'refresh'])
+    if enabled():
+        run(['omarchy-shell', 'io.github.olivoil.personal-theme.service', 'refresh'])
+
+
+def toggle_mode():
+    configure('appearance', 'light' if settings()['mode'] == 'dark' else 'dark')
 
 
 def choose_folder():
@@ -476,7 +482,7 @@ def request_sync():
 def main():
     signal.signal(signal.SIGTERM, terminate_children)
     parser = argparse.ArgumentParser(description='Personal Theme for Omarchy')
-    parser.add_argument('action', choices=['activate', 'deactivate', 'status', 'enabled', 'tick', 'sync', 'pick', 'set', 'next', 'pause', 'resume', 'is-paused', 'is-running', 'matches', 'configure', 'choose-folder', 'connect-drive', 'request-sync', 'show-status', 'install-dependencies'])
+    parser.add_argument('action', choices=['activate', 'deactivate', 'status', 'enabled', 'tick', 'sync', 'pick', 'set', 'next', 'pause', 'resume', 'is-paused', 'is-running', 'matches', 'configure', 'toggle-mode', 'choose-folder', 'connect-drive', 'request-sync', 'show-status', 'install-dependencies'])
     parser.add_argument('values', nargs='*')
     args = parser.parse_args()
     action, values = args.action, args.values
@@ -501,6 +507,7 @@ def main():
             actual = str(config['interval']) if values[0] == 'interval' else (config['mode'] if config['adaptive'] else 'fixed')
             sys.exit(0 if actual == values[1] else 1)
         elif action == 'configure': configure(*values)
+        elif action == 'toggle-mode': toggle_mode()
         elif action == 'choose-folder': choose_folder()
         elif action == 'connect-drive': connect_drive()
         elif action == 'request-sync': request_sync()

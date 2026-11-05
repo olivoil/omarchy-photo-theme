@@ -12,6 +12,7 @@ An Omarchy Quattro plugin with a native photo picker, Appearance menu, optional 
 - Rotation every 15, 30, 60, 120, or 240 minutes, only while Personal Theme is selected.
 - Persistent pause, including after selecting another photo or restarting the shell.
 - Matching dark colors, matching light colors, or wallpaper only.
+- **Color Mode → Dark / Light / Wallpaper Only** in the main plugin menu. Right-click its bar icon to toggle dark/light for the same photo.
 - Local folders and optional Google Drive downloads, checked every 15 minutes.
 - HEIC/HEIF conversion. Supported images up to 100 MiB; up to 10,000 photos per local source.
 - Disabling the plugin stops scheduling and workers. No systemd units or permanent theme hooks are needed.
@@ -40,6 +41,7 @@ personal-theme status
 personal-theme request-sync
 personal-theme configure interval 60
 personal-theme configure appearance dark   # light or fixed also supported
+personal-theme toggle-mode                 # dark ↔ light, same photo
 ```
 
 These short commands assume you added the plugin's `bin` directory to PATH, or created a launcher in `~/.local/bin`. The migrated local trial includes that launcher and forwards the old `omarchy-personal-wallpaper --pick/--pause/--resume` commands for compatibility. The menu always uses its absolute executable path. `resume` resets the countdown; it does not change the photo immediately. The source directory is separate from the managed background collection, so original files are never edited. Removing a source photo removes only its generated wallpaper copy; the currently displayed copy stays until it is no longer in use.

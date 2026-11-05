@@ -192,5 +192,30 @@ class PersonalThemeTests(unittest.TestCase):
         with self.assertRaises(ValueError): photos.configure('interval', '-1')
         with self.assertRaises(ValueError): photos.configure('appearance', 'unknown')
 
+    def test_light_mode_requests_matching_palette_without_resuming(self):
+        photos.update(paused=True)
+        with patch.object(photos, 'run') as command:
+            photos.configure('appearance', 'light')
+        self.assertEqual(photos.settings()['mode'], 'light')
+        self.assertTrue(photos.settings()['adaptive'])
+        self.assertTrue(photos.settings()['paused'])
+        self.assertTrue(photos.status()['colorDue'])
+        self.assertIn(['omarchy-shell', 'io.github.olivoil.personal-theme.service', 'refresh'],
+                      [call.args[0] for call in command.call_args_list])
+
+    def test_toggle_mode_round_trip(self):
+        with patch.object(photos, 'run'):
+            photos.toggle_mode()
+            self.assertEqual(photos.settings()['mode'], 'light')
+            photos.toggle_mode()
+            self.assertEqual(photos.settings()['mode'], 'dark')
+
+    def test_color_mode_is_accessible_from_main_plugin_menu(self):
+        with patch.object(photos, 'run'): photos.install_menu()
+        menu = photos.read(photos.MENU)
+        self.assertIn('appearance.personal-theme.colors.light', menu)
+        self.assertIn('appearance.personal-theme.colors.dark', menu)
+        self.assertNotIn('appearance.personal-theme.settings.colors', menu)
+
 
 if __name__ == '__main__': unittest.main()

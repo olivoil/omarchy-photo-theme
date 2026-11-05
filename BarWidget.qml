@@ -7,6 +7,7 @@ Ui.BarWidget {
   id: root
   moduleName: "io.github.olivoil.personal-theme"
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
+  readonly property string backend: decodeURIComponent(String(Qt.resolvedUrl("bin/personal-theme")).replace(/^file:\/\//, ""))
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
   Ui.BarIconButton {
@@ -16,7 +17,10 @@ Ui.BarWidget {
     text: ""
     tooltipText: strings.t("tooltip")
     onPressed: function(mouseButton) {
-      root.bar.run("omarchy menu summon personal-theme")
+      if (mouseButton === Qt.RightButton)
+        Quickshell.execDetached([root.backend, "toggle-mode"])
+      else
+        root.bar.run("omarchy menu summon personal-theme")
     }
   }
 }
