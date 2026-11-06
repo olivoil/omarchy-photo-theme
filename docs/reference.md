@@ -8,7 +8,13 @@
 - Matugen 4.2 or newer for matching colors, including Auto mode.
 - rclone for Google Drive. It isn't needed for a local folder.
 
-**Appearance → Photo Theme → Settings → Install Dependencies** opens a terminal to install the tools.
+Install the tools yourself before using the plugin:
+
+```bash
+omarchy pkg add matugen imagemagick zenity
+```
+
+For Google Drive, also run `omarchy pkg add rclone`. The plugin never installs, updates, or removes packages.
 
 Google Drive setup opens Google's authorization page if a connection isn't already available. Access is read-only. If rclone's shared Google login client stops working, follow its [instructions for creating your own client ID](https://rclone.org/drive/#making-your-own-client-id).
 

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.olivoil.photo-theme",
   "name": "Photo Theme",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Olivier Melcher",
   "description": "Your photos as rotating wallpapers, with optional adaptive colors and Google Drive syncing.",
   "license": "MIT",

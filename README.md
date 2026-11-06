@@ -12,11 +12,16 @@ You can use photos from any library. Export your favorites from Apple Photos, Go
 
 Photo Theme works with Omarchy 4 and Python 3.11 or newer.
 
+Install the tools, then add the plugin. Omarchy skips packages you already have:
+
 ```bash
+omarchy pkg add matugen imagemagick zenity
 omarchy plugin add https://github.com/olivoil/omarchy-photo-theme --enable
 ```
 
-Open **Appearance → Photo Theme → Settings** in the Omarchy menu. Choose **Install Dependencies** if any tools are missing, then set up your photos:
+For Google Drive, also run `omarchy pkg add rclone`. You don't need it for a local folder.
+
+Open **Appearance → Photo Theme → Settings** in the Omarchy menu to set up your photos:
 
 - **Use Local Folder** to choose a folder on your computer.
 - **Connect Google Drive Folder** to paste a folder link and connect your Google account. Photo Theme only reads from Drive.

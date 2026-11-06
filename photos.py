@@ -267,7 +267,6 @@ def install_menu(remove=False):
             for minutes in (15, 30, 60, 120, 240):
                 action(f'settings.interval.m{minutes}', f'Every {minutes} minutes', f'configure interval {minutes}',
                        checked=executable + f' matches interval {minutes}')
-            action('settings.dependencies', 'Install Dependencies', 'install-dependencies')
         # Preserve existing JSONC comments and layout outside owned entries.
         # The original is backed up; unrelated entry values remain identical.
         write(MENU, entries)
@@ -529,7 +528,7 @@ def request_sync():
 def main():
     signal.signal(signal.SIGTERM, terminate_children)
     parser = argparse.ArgumentParser(description='Photo Theme for Omarchy')
-    parser.add_argument('action', choices=['activate', 'deactivate', 'status', 'enabled', 'tick', 'sync', 'pick', 'set', 'next', 'pause', 'resume', 'is-paused', 'is-running', 'matches', 'configure', 'toggle-mode', 'choose-folder', 'connect-drive', 'request-sync', 'show-status', 'install-dependencies'])
+    parser.add_argument('action', choices=['activate', 'deactivate', 'status', 'enabled', 'tick', 'sync', 'pick', 'set', 'next', 'pause', 'resume', 'is-paused', 'is-running', 'matches', 'configure', 'toggle-mode', 'choose-folder', 'connect-drive', 'request-sync', 'show-status'])
     parser.add_argument('values', nargs='*')
     args = parser.parse_args()
     action, values = args.action, args.values
@@ -566,8 +565,6 @@ def main():
             if s['syncError']: message += ' Photo sync needs attention; check the plugin log.'
             if s['colorError']: message += ' Color generation needs attention; check the plugin log.'
             notify(message)
-        elif action == 'install-dependencies':
-            subprocess.Popen(['omarchy-launch-floating-terminal-with-presentation', 'omarchy pkg add matugen rclone imagemagick zenity'])
     except (RuntimeError, ValueError, OSError, subprocess.TimeoutExpired) as error:
         print(f'Photo Theme: {error}', file=sys.stderr)
         if action not in ('tick', 'sync', 'status', 'activate', 'deactivate'):
